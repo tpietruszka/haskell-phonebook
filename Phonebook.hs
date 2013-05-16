@@ -6,7 +6,7 @@ import Data.Time
 import Person
 import Date
 
-type Group = String
+
 
 -- Show i Read beda uzywane do zapisu do / odczytu z pliku - i niczego wiecej
 data Phonebook = Phonebook [Person] [Group] deriving (Show, Read)
@@ -38,9 +38,18 @@ findBirthdayPeople (Phonebook pList _) = do
   c <- getCurrentTime
   let today = Date $ utctDay c
   return (filter (hasBirthday today) pList)
+  
+   
+
+  
+-- dodaje grupę do książki
+addGroup :: Phonebook -> Group -> Phonebook
+addGroup (Phonebook pList gList) newGroup = (Phonebook pList newGroupList) where
+  newGroupList = sort ( newGroup : gList )
+
 
 urodziny = stringToDate "16.05.2012"
-kowalski = Person "Jan" "Kowalski" "McDonalds" "+48654654" "asd@example.com" urodziny
-nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate "11.02.1980")
+kowalski = Person "Jan" "Kowalski" "McDonalds" "+48654654" "asd@example.com" urodziny []
+nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate "11.02.1980") []
 
 book = addPerson (addPerson (Phonebook [] []) kowalski) nowak

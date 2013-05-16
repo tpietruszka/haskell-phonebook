@@ -13,6 +13,7 @@ type Telephone = String
 type Mail = String
 type Birthday = Maybe Date
 
+type Group = String
 -- Show i Read beda uzywane do zapisu do / odczytu z pliku - i niczego wiecej
 -- Wyświetlanie będzie realizowała funkcja printablePerson
 -- Unikalnym identyfikatorem osoby będzie jej adres email
@@ -23,7 +24,8 @@ data Person = Person {
   company :: Company, 
   telephone :: Telephone, 
   mail :: Mail, 		--UNIKALNY IDENTYFIKATOR
-  birthday :: Birthday }  deriving (Show, Read)
+  birthday :: Birthday, 
+  groups :: [Group]}  deriving (Show, Read)
   
 -- używana do sortowania
 instance Ord Person where
@@ -55,6 +57,23 @@ hasBirthday (Date date) person
   day = toInteger d
 
 
+  
+  
+-- dołącza osobę do grupy (nie zapisuje zmiany do Phonebook, należy wołać razem z editPerson).
+-- jeśli osoba już należy do tej grupy - nic się nie dzieje
+joinGroup :: Group -> Person -> Person
+joinGroup g p 
+  | not (g `elem` (groups p)) = p { groups = newGroupList }
+  | otherwise = p 
+  where
+   newGroupList = sort ( g : (groups p))
+
+      
+-- usuwa osobę z grupy, nie zapisuje zmian do Phonebook
+-- jeśli osoba nie należy do grupy - nic się nie dzieje
+leaveGroup :: Group -> Person -> Person
+leaveGroup g p = p { groups = newGroupList } where
+  newGroupList = [x | x <- groups p, x /= g]
   
   
 -- hasBirthday :: Person -> IO Bool 
