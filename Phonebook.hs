@@ -19,7 +19,15 @@ removePerson :: Phonebook -> Person -> Phonebook
 removePerson Empty _ = Empty
 removePerson (Phonebook pList) person = Phonebook [x | x <- pList, x /= person]
 
--- editPerson :: Phonebook -> Person -> Person -> Phonebook 
+-- zamienia jedną podaną osobę na drugą. 
+-- Jeśli pierwsza nie istnieje - generuje błąd
+editPerson :: Phonebook -> Person -> Person -> Phonebook 
+editPerson Empty _ _ = error "Próba edycji pustej książki"
+editPerson (Phonebook pList) old new
+  | old `elem` pList	= addPerson tempBook new 
+  | otherwise  		= error "Próba zmiany danych osoby, której nie ma w książce"
+  where 
+    tempBook = (removePerson book old)
 
 -- zwraca listę osób wg zadanej wartosci i kryterium, np 
 -- findPeopleBy name book "Jan"
