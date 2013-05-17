@@ -5,6 +5,7 @@ import Data.Time
 
 import Person
 import Date
+import Generic
 
 
 
@@ -22,34 +23,68 @@ removePerson (Phonebook pList gList) person = Phonebook [x | x <- pList, x /= pe
 -- zamienia jedną podaną osobę na drugą. 
 -- Jeśli pierwsza nie istnieje - generuje błąd
 editPerson :: Phonebook -> Person -> Person -> Phonebook 
-editPerson (Phonebook pList _) old new
+editPerson book@(Phonebook pList gList) old new
   | old `elem` pList	= addPerson tempBook new 
   | otherwise  		= error "Próba zmiany danych osoby, której nie ma w książce"
   where 
     tempBook = (removePerson book old)
 
--- zwraca listę osób wg zadanej wartosci i kryterium, np 
--- findPeopleBy name book "Jan"
+-- zwraca listę osób wg zadanej wartosci i kryterium, 
+-- zadana wartość może być przedrostkiem wartości z książki, np 
+-- findPeopleBy familyName book "Kowals"
 findPeopleBy :: (Person -> String) -> Phonebook -> String -> [Person]
-findPeopleBy f (Phonebook pList _) value = filter ((==value) . f) pList
+findPeopleBy f (Phonebook pList _) value = filter ((isPrefixOf value) . f) pList
 
+-- zwraca listę osób które dzisiaj obchodzą urodziny, 
+-- jest "impure" bo pobiera aktualną datę z systemu
 findBirthdayPeople :: Phonebook -> IO [Person]
 findBirthdayPeople (Phonebook pList _) = do
   c <- getCurrentTime
   let today = Date $ utctDay c
   return (filter (hasBirthday today) pList)
   
-   
-
+-- zwraca listę osób należących do danej grupy
+findPeopleInGroup :: Phonebook -> Group -> [Person]
+findPeopleInGroup (Phonebook pList gList) g = filter (\x -> g `elem` (groups x)) pList
+-- findPeopleInGroup (Phonebook pList gList) g = filter ((elem g).groups) pList -- równoznaczne 
   
--- dodaje grupę do książki
+-- dodaje grupę do książki, jeśli grupa już istnieje - nic się nie dzieje
 addGroup :: Phonebook -> Group -> Phonebook
-addGroup (Phonebook pList gList) newGroup = (Phonebook pList newGroupList) where
-  newGroupList = sort ( newGroup : gList )
+addGroup book@(Phonebook pList gList) newGroup 
+  | not $ newGroup `elem` gList = (Phonebook pList newGroupList)
+  | otherwise 			 = book
+  where
+    newGroupList = sort ( newGroup : gList )
+  
+-- usuwa grupę z listy i z wszystkich osób. Jeśli grupa nie istnieje - nic się nie dzieje
+deleteGroup :: Phonebook -> Group -> Phonebook
+deleteGroup (Phonebook pList gList) g = (Phonebook newPersonList newGroupList) where
+  newPersonList = map (leaveGroup g) pList
+  newGroupList = delete g gList
 
+-- zmienia nazwę grupy (również w opisach osób). Zmiana nazwy grupy na istniejącą oznacza ich scalenie
+renameGroup :: Phonebook -> Group -> Group -> Phonebook
+renameGroup book@(Phonebook pList gList) old new = (Phonebook newPersonList newGroupList) where
+  newGroupList = if not $ new `elem` gList
+		    then sort $ new : afterDeletion
+		    else afterDeletion
+  afterDeletion = delete old gList
+  newPersonList = sort $ (map ((leaveGroup old).(joinGroup new)) inOldGroup) ++ notInOldGroup
+  inOldGroup = findPeopleInGroup book old
+  notInOldGroup = pList \\ inOldGroup
+
+-- dodaje daną osobę do grupy 
+addPersonToGroup :: Phonebook -> Person -> Group -> Phonebook
+addPersonToGroup book@(Phonebook pList gList) p g = editPerson book p (joinGroup g p)
+
+-- usuwa daną osobe do grupy 
+removePersonFromGroup :: Phonebook -> Person -> Group -> Phonebook
+removePersonFromGroup book@(Phonebook pList gList) p g = editPerson book p (leaveGroup g p) 
 
 urodziny = stringToDate "16.05.2012"
-kowalski = Person "Jan" "Kowalski" "McDonalds" "+48654654" "asd@example.com" urodziny []
-nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate "11.02.1980") []
+kowalski = Person "Jan" "Kowalski" "McDonalds" "+48654654" "asd@example.com" urodziny ["Rodzinne"]
+nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate "11.02.1980") ["Rodzinne"]
 
-book = addPerson (addPerson (Phonebook [] []) kowalski) nowak
+book0 = addPerson (addPerson (Phonebook [] ["Rodzinne"]) kowalski) nowak
+book2 = addGroup book0 "Osobiste"
+book3 = addPersonToGroup book2 kowalski "Osobiste"
