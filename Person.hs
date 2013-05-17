@@ -66,16 +66,34 @@ joinGroup g p
   | not (g `elem` (groups p)) = p { groups = newGroupList }
   | otherwise = p 
   where
-   newGroupList = sort ( g : (groups p))
+   newGroupList = insert g (groups p)
 
       
 -- usuwa osobę z grupy, nie zapisuje zmian do Phonebook
 -- jeśli osoba nie należy do grupy - nic się nie dzieje
 leaveGroup :: Group -> Person -> Person
 leaveGroup g p = p { groups = newGroupList } where
-  newGroupList = [x | x <- groups p, x /= g]
+  newGroupList = delete g (groups p)
   
-  
+-- zmienia nazwę grupy, do której należy dana osoba
+-- jeśli osoba nie należy do tej grupy - nic się nie zmienia
+-- funkcja zapewnia, że przez zmianę nazwy nie powstanie duplikat na liście grup
+changeGroup :: Group -> Group -> Person -> Person
+changeGroup old new person 
+  | old `elem` gp	= person { groups = 
+    if not $ new `elem` gp 		-- sprawdzenie, czy po zmianie nie będzie duplikatu
+	 then changed 			-- zmiana nazwy 
+	 else oldDeleted		-- tylko usuniecie starej grupy
+  }
+  | otherwise = person -- osoba nie nalezala do grupy old - bez zmian
+    where
+      changed = insert new oldDeleted
+      oldDeleted = delete old gp
+      gp = groups person
+      
+	
+	
+	
 -- hasBirthday :: Person -> IO Bool 
 -- hasBirthday person = do
 --   c <- getCurrentTime

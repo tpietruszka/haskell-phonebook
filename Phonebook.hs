@@ -8,26 +8,23 @@ import Date
 import Generic
 
 
-
+-- obiekt przechowujący informacje o osobach i grupach, w formie listy
+-- listy osób i grup są cały czas posortowane 
 -- Show i Read beda uzywane do zapisu do / odczytu z pliku - i niczego wiecej
 data Phonebook = Phonebook [Person] [Group] deriving (Show, Read)
 
 -- dodaje osobę do książki telefonicznej, zakłada poprawność dostarczonych danych
 addPerson :: Phonebook -> Person -> Phonebook
-addPerson (Phonebook pList gList) person = Phonebook (sort (person : pList)) gList
+addPerson (Phonebook pList gList) person = Phonebook (insert person pList) gList
 
 -- usuwa osobę - podaną jako cały obiekt
 removePerson :: Phonebook -> Person -> Phonebook 
-removePerson (Phonebook pList gList) person = Phonebook [x | x <- pList, x /= person] gList
+removePerson (Phonebook pList gList) person = Phonebook (delete person pList) gList
 
 -- zamienia jedną podaną osobę na drugą. 
 -- Jeśli pierwsza nie istnieje - generuje błąd
 editPerson :: Phonebook -> Person -> Person -> Phonebook 
-editPerson book@(Phonebook pList gList) old new
-  | old `elem` pList	= addPerson tempBook new 
-  | otherwise  		= error "Próba zmiany danych osoby, której nie ma w książce"
-  where 
-    tempBook = (removePerson book old)
+editPerson book@(Phonebook pList gList) old new = Phonebook (replace pList old new) gList
 
 -- zwraca listę osób wg zadanej wartosci i kryterium, 
 -- zadana wartość może być przedrostkiem wartości z książki, np 
@@ -54,7 +51,7 @@ addGroup book@(Phonebook pList gList) newGroup
   | not $ newGroup `elem` gList = (Phonebook pList newGroupList)
   | otherwise 			 = book
   where
-    newGroupList = sort ( newGroup : gList )
+    newGroupList = insert newGroup gList
   
 -- usuwa grupę z listy i z wszystkich osób. Jeśli grupa nie istnieje - nic się nie dzieje
 deleteGroup :: Phonebook -> Group -> Phonebook
@@ -69,9 +66,11 @@ renameGroup book@(Phonebook pList gList) old new = (Phonebook newPersonList newG
 		    then sort $ new : afterDeletion
 		    else afterDeletion
   afterDeletion = delete old gList
-  newPersonList = sort $ (map ((leaveGroup old).(joinGroup new)) inOldGroup) ++ notInOldGroup
-  inOldGroup = findPeopleInGroup book old
-  notInOldGroup = pList \\ inOldGroup
+  newPersonList =  map (changeGroup old new) pList 
+  
+-- scala grupę a i b, grupa wynikowa ma nazwę a
+mergeGroups :: Phonebook -> Group -> Group -> Phonebook
+mergeGroups book old new = renameGroup book old new
 
 -- dodaje daną osobę do grupy 
 addPersonToGroup :: Phonebook -> Person -> Group -> Phonebook
