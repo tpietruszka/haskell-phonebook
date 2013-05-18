@@ -21,3 +21,4 @@ replace list old new
     ending = drop (position + 1) list
     position = fromJust $ elemIndex old list 
   
+

@@ -79,7 +79,7 @@ addPersonToGroup book@(Phonebook pList gList) p g = editPerson book p (joinGroup
 -- usuwa daną osobe do grupy 
 removePersonFromGroup :: Phonebook -> Person -> Group -> Phonebook
 removePersonFromGroup book@(Phonebook pList gList) p g = editPerson book p (leaveGroup g p) 
-
+{-
 urodziny = stringToDate "16.05.2012"
 kowalski = Person "Jan" "Kowalski" "McDonalds" "+48654654" "asd@example.com" urodziny ["Rodzinne"]
 nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate "11.02.1980") ["Rodzinne"]
@@ -87,3 +87,5 @@ nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate 
 book0 = addPerson (addPerson (Phonebook [] ["Rodzinne"]) kowalski) nowak
 book2 = addGroup book0 "Osobiste"
 book3 = addPersonToGroup book2 kowalski "Osobiste"
+-}
+
