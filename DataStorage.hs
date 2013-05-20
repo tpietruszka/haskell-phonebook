@@ -15,7 +15,6 @@ loadBook :: [Char] -> IO Phonebook
 loadBook fname =   do   System.Directory.createDirectoryIfMissing True "data/"
                         handleFile <- openFile (createFname fname) ReadWriteMode
                         idata <- loadData handleFile 
-                        hClose handleFile
                         return idata
 
 --odczytuje zawartość z pliku (ktory jest przekazny przez uchwyt)
