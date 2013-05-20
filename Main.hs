@@ -32,7 +32,7 @@ searchSubmenu= showMenu "WYSZUKIWANIE KONTAKTÓW WEDŁUG:"
 
 -- ******** editionSubmenu *********
 editionSubmenu = showMenu "EDYCJA KONTAKTOW" 
-	       [("Wypisz kontakty", whoseBirthday),
+	       [("Wypisz kontakty", Interface.printBookContacts),
 		("Nowy kontakt", Interface.addContact),
                 ("Modyfikacja kontaktu", whoseBirthday),
                 ("Usunięcie kontaktu", whoseBirthday),

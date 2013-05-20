@@ -7,32 +7,50 @@ import System.Directory
 import Terminal
 import Phonebook
 
-
+tempFile = "temp"
 
 
 -- Function used to load all items from the specified file
-loadBook :: Read a => [Char] -> IO a
+loadBook :: [Char] -> IO Phonebook
 loadBook fname =   do   System.Directory.createDirectoryIfMissing True "data/"
-			
                         handleFile <- openFile (createFname fname) ReadWriteMode
-			putStrFlush "hi!"
                         idata <- loadData handleFile 
                         hClose handleFile
                         return idata
 
+--odczytuje zawartość z pliku (ktory jest przekazny przez uchwyt)
+loadData handleFile = do isEof <- hIsEOF handleFile
+	                 if isEof then
+	                     return (Phonebook [] [])
+	                 else do
+	                     contents <- hGetContents handleFile
+	                     return (read (contents)::Phonebook)
 
-loadData handleFile = do contents <- hGetContents handleFile
-			 return (read (contents))
--- co stanie sie jak plik bedzi pusty?
-
-
+--nadpisuje wskazany plik obiektem typu Phonebook
 overwriteBook newbook dataFile = do
-	(tempName, tempHandle) <- openTempFile "." "temp"
+	writeFile tempFile' (show newbook)
+	x <- doesFileExist dataFile'
+	if x
+	  then removeFile dataFile' >> renameFile tempFile' dataFile'
+	  else renameFile tempFile' dataFile'
+		where tempFile' = (createFname tempFile)
+		      dataFile' = (createFname dataFile)
+		      
+
+
+
+{-
+overwriteBook newbook dataFile = do
+	(tempName, tempHandle) <- openFile (createFname tempName) ReadWriteMode -- tworzymy temp file
 	hPrint tempHandle newbook
 	hClose tempHandle 
-	removeFile dataFile  
-    	renameFile tempName dataFile 
+	x <- doesFileExist (createFname fname)
+	if x
+	  then removeFile (createFname fname) >> renameFile tempName dataFile
+	  else
+	       renameFile tempName dataFile
 
+-}
 
 
 

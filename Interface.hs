@@ -1,4 +1,4 @@
-module Interface (addContact) where
+module Interface (addContact, printBookContacts) where
 import Phonebook
 import Person
 import Terminal
@@ -18,7 +18,6 @@ addContact = do name <- promptLine "Imię" -- sprawdzanie czy nie ma cyfr
 		birthday  <- promptLine "Data urodzin(dd.mm.rrrr)" --zadbac o  formatwanie
 		groups <- promptLine "Grupa" --zadbac o  formatwanie, pytanie wielokrotne o kolejne grupy
                 getBook >>= addAndSaveNew name familyName company telephone mail birthday groups
-
 		--appendFile dataFile $ (show $ Person name familyName company telephone mail (stringToDate birthday) [groups]) ++ "\n"  
   		
 getBook = DataStorage.loadBook dataFile  
@@ -26,6 +25,12 @@ getBook = DataStorage.loadBook dataFile
 addAndSaveNew name familyName company telephone mail birthday groups phonebook = 
   	   DataStorage.overwriteBook newbook dataFile
 		where newbook = addPerson phonebook $ Person name familyName company telephone mail (stringToDate birthday) [groups]
+
+
+-------------------wypisywanie ksiazki
+printBookContacts = do getBook >>= Phonebook.printContacts
+
+
 
 
 --printBook = do content <- readFile "contacts"
