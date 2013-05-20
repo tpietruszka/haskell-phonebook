@@ -1,35 +1,55 @@
-module DataStorage (loadItems, getItem, addItem, saveItems) where
+--module DataStorage (loadItems, getItem, addItem, saveItems) where
+module DataStorage (loadBook,overwriteBook) where
 
 import Data.List
 import System.IO
 import System.Directory
 import Terminal
+import Phonebook
+
 
 
 
 -- Function used to load all items from the specified file
 loadBook :: Read a => [Char] -> IO a
-loadBook fname =   do  System.Directory.createDirectoryIfMissing True "data/"
+loadBook fname =   do   System.Directory.createDirectoryIfMissing True "data/"
+			
                         handleFile <- openFile (createFname fname) ReadWriteMode
-                        idata <- loadData handleFile
+			putStrFlush "hi!"
+                        idata <- loadData handleFile 
                         hClose handleFile
                         return idata
 
 
--- TUTAJ WROCIC!!!!!!!!!!!!!!!
--- Function used to get all data from the file                            
-loadData handleFile = do isEof <- hIsEOF handleFile
-	                 if isEof then
-	                     return []
-	                 else do
-	                     line <- hGetLine handleFile
-	                     rest <- (loadData handleFile)
-	                     return ([(read line)] ++ rest)
-	          
+loadData handleFile = do contents <- hGetContents handleFile
+			 return (read (contents))
+-- co stanie sie jak plik bedzi pusty?
+
+
+overwriteBook newbook dataFile = do
+	(tempName, tempHandle) <- openTempFile "." "temp"
+	hPrint tempHandle newbook
+	hClose tempHandle 
+	removeFile dataFile  
+    	renameFile tempName dataFile 
+
+
 
 
 -- tworzy odpowiednia nazwe pliku
 createFname fname = ("data/" ++ fname ++ ".data")
+
+{-
+-- Function used to get all data from the file                            
+loadData handleFile = do isEof <- hIsEOF handleFile
+	                 if isEof then
+	                     return Nothing
+	                 else do
+	                     contents <- hGetContents handleFile
+	                     return (Just (read contents))
+	          
+-}
+
 
 
 {-      

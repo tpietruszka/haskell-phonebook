@@ -3,6 +3,7 @@ import Phonebook
 import Person
 import Terminal
 import Date
+import DataStorage
 
 dataFile = "contacts"
 
@@ -15,14 +16,17 @@ addContact = do name <- promptLine "Imię" -- sprawdzanie czy nie ma cyfr
 		telephone  <- promptLine "Nr telefonu" -- zadbac o formatowanie
 		mail  <- promptLine "Adres email" -- czy jest @ i co najmniej jedna kropka?
 		birthday  <- promptLine "Data urodzin(dd.mm.rrrr)" --zadbac o  formatwanie
-		groups <- promptLine "Grupy" --zadbac o  formatwanie
-                getBook >>= --newPerson name familyName company telephone mail birthday groups
+		groups <- promptLine "Grupa" --zadbac o  formatwanie, pytanie wielokrotne o kolejne grupy
+                getBook >>= addAndSaveNew name familyName company telephone mail birthday groups
 
 		--appendFile dataFile $ (show $ Person name familyName company telephone mail (stringToDate birthday) [groups]) ++ "\n"  
   		
-
-getStations :: IO Phonebook
 getBook = DataStorage.loadBook dataFile  
+
+addAndSaveNew name familyName company telephone mail birthday groups phonebook = 
+  	   DataStorage.overwriteBook newbook dataFile
+		where newbook = addPerson phonebook $ Person name familyName company telephone mail (stringToDate birthday) [groups]
+
 
 --printBook = do content <- readFile "contacts"
 
