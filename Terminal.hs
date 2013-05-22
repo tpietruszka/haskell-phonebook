@@ -23,7 +23,7 @@ prompt' text f =    do  putStrFlush $ text ++ ": "
                             Left e  ->  invalid
                             Right v ->  if (f v) then return v
                                         else invalid
-                    where invalid = putStrFlush "Invalid data. " >> prompt' text f
+                    where invalid = putStrFlush "Błąd, spróbuj jeszcze raz:" >> prompt' text f
 
 
 -- formatowanie tutulu menu
@@ -67,7 +67,7 @@ pressEnter = promptLine "Wcisnij ENTER aby kontynuowac.." >> return ()
 -- wyswietla menu z tytylem; wejscie: tytul, lista : (nazwa, funkcja)
 showMenu :: [Char] -> [([Char], IO a)] -> IO a
 showMenu title actionList = do  showItems title [fst i | i <- actionList]
-                                choice <- prompt' "Your choice" (\c -> c >= 1 && c <= length actionList)
+                                choice <- prompt' "Twój wybór" (\c -> c >= 1 && c <= length actionList)
                                 snd $ actionList !! (choice - 1)  
 
 
