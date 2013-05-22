@@ -7,7 +7,6 @@ import Person
 import Date
 import Generic
 
-import Terminal
 
 
 -- obiekt przechowujący informacje o osobach i grupach, w formie listy
@@ -30,9 +29,9 @@ editPerson book@(Phonebook pList gList) old new = Phonebook (replace pList old n
 
 -- zwraca listę osób wg zadanej wartosci i kryterium, 
 -- zadana wartość może być przedrostkiem wartości z książki, np 
--- findPeopleBy familyName book "Kowals"
-findPeopleBy :: (Person -> String) -> Phonebook -> String -> [Person]
-findPeopleBy f (Phonebook pList _) value = filter ((isPrefixOf value) . f) pList
+-- findPeopleBy familyName "Kowals" book3
+findPeopleBy :: (Person -> String) -> String -> Phonebook -> [Person]
+findPeopleBy f value (Phonebook pList _) = filter ((isPrefixOf value) . f) pList
 
 -- zwraca listę osób które dzisiaj obchodzą urodziny, 
 -- jest "impure" bo pobiera aktualną datę z systemu
@@ -82,13 +81,7 @@ addPersonToGroup book@(Phonebook pList gList) p g = editPerson book p (joinGroup
 removePersonFromGroup :: Phonebook -> Person -> Group -> Phonebook
 removePersonFromGroup book@(Phonebook pList gList) p g = editPerson book p (leaveGroup g p) 
 
--- wypisywanie ksiazki / do tego bylo potrzebne import Terminal
-printContacts :: Phonebook -> IO ()
-printContacts (Phonebook pList gList) = printIt pList
-	where printIt [] = return ()
-	      printIt (x:xs) = do putStrFlush $ (printablePerson x) ++ "\n"
-		    		  printIt xs	
-			      
+
 
 
 

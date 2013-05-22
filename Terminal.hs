@@ -1,6 +1,8 @@
 module Terminal where
 import System.IO
 import Control.Exception
+import Phonebook
+import Person
 
 
 -- wypis i flush stdout
@@ -30,22 +32,37 @@ createLabel label size fill =   let fillsize = (size - (length label) - 2)
                                     halffillR = halffillL + (fillsize `mod` 2)
                                 in
                                     (replicate halffillL fill) ++ " " ++ label ++ " " ++ (replicate halffillR fill)   
--- Wyswietlanie listy bez naglowka                        
-showItems title itemsList = showItems' title itemsList False  
 
--- Wyswietlanie listy
--- wejscie: hasHeader - czy lista ma w pierwszym elemencie naglowek
-showItems' title itemsList hasHeader = 
+-- Wyswietlanie listy bez naglowka                        
+showItems title itemsList = showItemsAndComment title itemsList [] 
+
+-- Wyswietlanie listy z komentarzem na poczatku
+showItemsAndComment title itemsList  comment= 
     do  putStrLn $ "\n" ++ createLabel title 100 '-'
-        if (hasHeader) then do
-            putStrFlush $ " *) " ++ (head itemsList) ++ "\n"
-            putStrFlush $ menuText (tail itemsList) 1
+        if (comment /= []) then do
+            putStrFlush $ " *) " ++ comment ++ "\n"
+            putStrFlush $ menuText itemsList 1
         else
             putStrFlush $ menuText itemsList 1
         putStrLn $ createLabel "-" 100 '-'
         where
             menuText [] inum = []
             menuText (i:is) inum = " " ++ (show inum) ++ ") " ++ i ++ "\n" ++ menuText is (inum + 1)                                  
+
+-- UWAGA BAD SMELL  - na razie tak, bo zamiast show jest printablePerson - co z tym? 
+showBook title (Phonebook pList gList) = 
+    do  putStrLn $ "\n" ++ createLabel title 100 '-'
+        putStrFlush $ " *) " ++ comment ++ "\n"
+        putStrFlush $ bookText pList 1
+        putStrLn $ createLabel "-" 100 '-'
+        where
+            bookText [] _ = []
+            bookText (i:is) inum = " " ++ (show inum) ++ ") " ++ (printablePerson i)++ "\n" ++ bookText is (inum + 1)                                  
+	    comment = "Imię Nazwisko Firma Nr.telefonu Email Data_urodzin Grupa"
+
+
+-- Function used to wait for a user's action
+pressEnter = promptLine "Wcisnij ENTER aby kontynuowac.." >> return ()
 
 -- wyswietla menu z tytylem; wejscie: tytul, lista : (nazwa, funkcja)
 showMenu :: [Char] -> [([Char], IO a)] -> IO a
