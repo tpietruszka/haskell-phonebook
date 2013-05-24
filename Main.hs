@@ -7,51 +7,42 @@ import Terminal
 import Interface
 import Person
 
-
-
-
+ --TODO: 
+ -- można (ale nie trzeba) zrobić jeszce jakieś eleganckie wyswietlenie całej książki, ale typu grupa1:\n \t kontakt1 \n kontakt2\n grupa2: \n \t kontakt3 \n kontakt4\n 
+ -- można byłoby pobierać przy wywoływaniu z terminala  parametr - nazwę pliku na którym ma się cała zabawa odbywać - teraz na szwtywno jest  nazwa "contacts" do której dobraniana jest końcówka .data oraz folder /data
 -- **********  main menu  ***********
 main =  forever $ showMenu "MENU GŁÓWNE" 
-	       [("Wyszukiwanie kontaktów", searchSubmenu),
-		("Edytor kontaktów", editionSubmenu),
+	       [("Wyświetlenie wszystkich kontaków", Interface.printContactsFile),
+		("Wyświetlenie grupy kontaków",  Interface.printGroup),
+		("Wyszukiwanie kontaktów wg danych", searchSubmenu Interface.pressEnter'), 
+		("Dodaj kontakt", Interface.addContact), 
+		("Edytor kontaktów", searchSubmenu Interface.editOrRemoveP),
                 ("Edytor grup kontaktów", groupsSubmenu),
-                ("Kto ma dzisiaj urodziny?", whoseBirthday),
+                ("Kto ma dzisiaj urodziny?", Interface.whoseBirthday),
                 ("Wyjście", exitSuccess)] 
 
-
-
 -- ******* searchSubmenu *******
-searchSubmenu= showMenu "WYSZUKIWANIE KONTAKTÓW WEDŁUG:"
-	       [("Imienia",  Interface.findAndShow name), -- te funkcje beda musiały zapytac o imie badz wypisac liste gdy wciesniemy enter
-                ("Nazwiska", Interface.findAndShow familyName),
-                ("Firmy", Interface.findAndShow company),
-                ("Nr telefonu", Interface.findAndShow telephone),
- 		("Adresu email", Interface.findAndShow mail),
-     -- 	("Daty urodzin", Interface.findAndShow birthday), -- trzeba rozkminic jak to zrobic przy tych typach
-     --         ("Grupy", Interface.findAndShow groups),
+searchSubmenu nextFunction = showMenu "WYSZUKIWANIE KONTAKTÓW WEDŁUG:"
+	       [("Imienia",  Interface.find name nextFunction), 
+                ("Nazwiska", Interface.find familyName nextFunction),
+                ("Firmy", Interface.find company nextFunction),
+                ("Nr telefonu", Interface.find telephone nextFunction),
+ 		("Adresu email", Interface.find mail nextFunction),
+     	     -- ("Daty urodzin", Interface.find birthday nextFunction), -- TODO: cos tu nie smiga z typami
 		("<- Powrót", main)] 
 
--- ******** editionSubmenu *********
-editionSubmenu = showMenu "EDYCJA KONTAKTOW" 
-	       [("Wypisz kontakty", Interface.printContactsFile),
-		("Nowy kontakt", Interface.addContact),
-                ("Modyfikacja lub usunięcie kontaktu", editSubSubmenu),
-                ("<- Powrót", main)] 
-
--- ******** editSubSubmenu *********
-editSubSubmenu = showMenu "Modyfikacja lub usunięcie kontaktu" 
-	       [("Wybór z listy wszystkich kontaktów", Interface.printAndEdit),
-		("Wybór przez wyszukiwanie", whoseBirthday), --Interface.findAndEdit),
-                ("<- Powrót", main)] 
 
 -- ********* groupsSubmenu **********
 groupsSubmenu= showMenu "EDYCJA GRUP" 
-	       [("Nowa grupa kontaktów", whoseBirthday),
-                ("Modyfikacja grupy", whoseBirthday),
-                ("Usunięcie grupy", whoseBirthday),
-                ("Scalenie grup", whoseBirthday),
+	       [("Dodaj grupę", Interface.newGroup),
+		("Wyświetl istniejące grupy", Interface.printAllGroups),
+		("Dodaj osobę do grupy", searchSubmenu Interface.addPerToGr),
+		("Usuń osobę z grupy", searchSubmenu Interface.removePerFromGr),
+                ("Zmień nazwę grupy", Interface.groupChangeName),
+		("Scal dwie grupy", Interface.sumGroups),
+                ("Usunięcie grupy", Interface.removeGroup),
                 ("<- Powrót", main)] 
 
--- ***** whoseBirthday option  ******
-whoseBirthday= putStrLn "gówno! haha!"
+
+
 

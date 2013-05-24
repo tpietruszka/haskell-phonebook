@@ -49,7 +49,7 @@ showItemsAndComment title itemsList  comment=
             menuText [] inum = []
             menuText (i:is) inum = " " ++ (show inum) ++ ") " ++ i ++ "\n" ++ menuText is (inum + 1)                                  
 
--- UWAGA BAD SMELL  - na razie tak, bo zamiast show jest printablePerson - co z tym? 
+-- TODO: BAD SMELL po showItemsAndComment bo zamiast show jest printablePerson - co z tym? 
 showBook title (Phonebook pList gList) = 
     do  putStrLn $ "\n" ++ createLabel title 100 '-'
         putStrFlush $ " *) " ++ comment ++ "\n"
@@ -61,7 +61,7 @@ showBook title (Phonebook pList gList) =
 	    comment = "Imię Nazwisko Firma Nr.telefonu Email Data_urodzin Grupa"
 
 
--- Function used to wait for a user's action
+-- czekanie na Enter
 pressEnter = promptLine "Wcisnij ENTER aby kontynuowac.." >> return ()
 
 -- wyswietla menu z tytylem; wejscie: tytul, lista : (nazwa, funkcja)

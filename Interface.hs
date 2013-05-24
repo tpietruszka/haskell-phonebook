@@ -1,4 +1,17 @@
-module Interface (addContact, printContactsFile, findAndShow, printAndEdit) where
+module Interface (addContact,
+		  printContactsFile, 
+		  printGroup,
+		  find, 
+		  pressEnter', 
+		  editOrRemoveP,
+		  newGroup, 
+		  printAllGroups,
+		  addPerToGr,
+		  removePerFromGr,
+		  groupChangeName,
+		  sumGroups,
+		  removeGroup,
+		  whoseBirthday) where
 import Phonebook
 import Person
 import Terminal
@@ -7,100 +20,143 @@ import DataStorage
 import Data.Char
 dataFile = "contacts"
 
+-- **** FUNKCJE POMOCNICZE ****
+
+--wczytuje książkę kontaktów z pliku dataFile
+getBook = DataStorage.loadBook dataFile  
+--nadpisuje globalny plik dataFile podaną książką kontatów
+saveNewBook newBook = DataStorage.overwriteBook newBook dataFile
+--zwraca osobe z listy kontaktów ktora zostala wypisana z numeracją dopisaną "w biegu"
+getPerson book num = (getPList book) !! (num -1 )
+--zwraca tylko listę osob z Phonebook 
+getPList (Phonebook pList gList) = pList
+--zwraca tylko listę grup z Phonebook 
+getGList:: Phonebook -> [Group]
+getGList (Phonebook pList gList) = gList
 
 -- **** DODAWANIE KONTAKTU ****
 
---punkcje pomocnicze:
-getBook = DataStorage.loadBook dataFile  
-saveNewBook newBook = DataStorage.overwriteBook newBook dataFile
-
+-- ładuje książkę z pamięci, woła funkcję pobierajcą dane osoby, zapisuje książkę powiększoną o nowy wpis
+addContact :: IO ()
 addContact = do book <- getBook
-		personToAdd <- getPersonData
-		saveNewBook (addPerson book personToAdd) 
+		personToAdd <- getPersonData 
+		saveNewBook $ addPerson book personToAdd 
 
-getPersonData = do 
+-- pobiera z konsoli dane o nowej osobie 
+getPersonData = do --TODO: zrobić kontrolę wprowadzanych słów, można się posłużuć funkcją prompt' np. prompt' "Adres email" (\ x -> ("@" `elem` x) && ("." `elem` x) && (isLetter (last x))
 		name <- promptLine "Imię" 
-	        familyName <- promptLine "Nazwisko"  --czy jakies sprawdzanie formatiowania? np. czy nie zawiera cyfr, no ale w sumie ktoś może chcieć sobie wpisywać np. Kasia2 :P
+	        familyName <- promptLine "Nazwisko"  
 		company  <- promptLine "Firma" 
-		telephone  <- promptLine "Nr telefonu" --czy jakies sprawdzanie formatiowania?
-		mail  <- promptLine "Adres email" --prompt' "Adres email" (\ x -> ("@" `elem` x) && ("." `elem` x) && (isLetter (last x))
-		birthday  <- promptLine "Data urodzin(dd.mm.rrrr)" --
-		groups <- promptLine "Grupa" --zadbac o  formatwanie, pytanie wielokrotne o kolejne grupy
-		return $ Person name familyName company telephone mail (stringToDate birthday) [groups]
+		telephone  <- promptLine "Nr telefonu"
+		mail  <- promptLine "Adres email" 
+		birthday  <- promptLine "Data urodzin(dd.mm.rrrr)" 
+		return $ Person name familyName company telephone mail (stringToDate birthday) []
 
--- **** WYPISYWANIE ****
+
+-- **** WYPISYWANIE GRUPY KONTAKTÓW ****
+printGroup = do book <- getBook
+		groupName <- promptLine "Podaj nazwę grupy" 
+		showBook "Kontakty w tej grupie" $ (Phonebook (findPeopleInGroup book groupName) [])
+		pressEnter 
+
+
+-- **** WYPISYWANIE KONTAKTU****
 printContactsFile = getBook >>= showBook "Wszytskie kontakty"  >> pressEnter 
 
--- **** WYSZYKIWANIE ****
-findAndShow :: (Person -> String) -> IO ()
-findAndShow byWhat = do book <- getBook
-			value <- promptLine "Podaj prefix"
-			showBook "WYNIKI" (Phonebook (findPeopleBy byWhat value book) []) >> pressEnter
+-- **** WYSZYKIWANIE KONTAKTU****
+find byWhat functionAtEnd= do book <- getBook
+			      value <- promptLine "Podaj prefix"
+			      showBook "WYNIKI" (Phonebook (findPeopleBy byWhat value book) []) 
+			      functionAtEnd (Phonebook (findPeopleBy byWhat value book) []) --TODO: jak to poprawnie napisać
 
+-- funkcja pomocnicza do mechaniznu wyszukanie+wyswietlenie+edycja - ta funkcja pozwala tylko na wyszukanie i wyswietlenie bo "gubi" nazwę funkcji do wyjonania póżniej
+pressEnter':: Phonebook -> IO ()
+pressEnter' whatever = promptLine "Wcisnij ENTER aby kontynuowac.." >> return ()
 
--- **** EDYCJA/USUWANIE ****
-printAndEdit = do book <- getBook
-		  showBook "Wszytskie kontakty" book 
-		  nr <- prompt' "Podaj numer kontaktu do edycji/usuniecia"  (\c -> c >= 1 && c <= length (getList book))
-		  editOrDelete <- prompt' "Dostępne operacje:\n 1) edycja\n 2) usunięcie kontaktu \n Twój wybór"  (\c -> c `elem` [1,2])
-		  if editOrDelete == 1
-			then editContact (getPerson book nr)
-			else deleteContact (getPerson book nr)
-	
+-- **** EDYCJA & USUWANIE KONTAKTU****
+
+whoFromResultsToEdit matchingGuysBook = if (inputLength > 1) 
+						then do nr <- prompt' "Podaj numer kontaktu do edycji"  (\c -> c >= 1 && c <= inputLength)
+							return $ getPerson matchingGuysBook nr 
+						else return $ getPerson matchingGuysBook 1
+							where inputLength = length (getPList matchingGuysBook)
+
+editOrRemoveP matchingGuysBook = do persona <- whoFromResultsToEdit matchingGuysBook --TODO: moze tutaj dodac opcje dodaj do grupy?
+				    editOrDelete <- prompt' "Dostępne operacje:\n 1) Edycja\n 2) Usunięcie kontaktu \n 3) Anuluj \n Twój wybór"  (\c -> c `elem` [1,2,3])
+				    resultAction editOrDelete persona
+					where resultAction x persona = case x of
+								    1 -> editContact persona
+								    2 -> deleteContact persona
+								    3 -> return ()
+editContact :: Person -> IO ()
 editContact oldPerson = do book <- getBook
 			   putStrFlush "Podaj nowe dane kontaktu:\n"
 			   newPerson <- getPersonData
 			   saveNewBook $ editPerson book oldPerson newPerson
-			   putStrFlush "Kontakt zmieniony\n" >> pressEnter
+			   putStrFlush "\t\t\t ---------------> Kontakt został zmieniony!\n" >> pressEnter
 
-
+deleteContact :: Person -> IO ()
 deleteContact personToDel = do book <- getBook
 			       saveNewBook $ removePerson book personToDel 
-			       putStrFlush "Kontakt usunięty\n" >> pressEnter
+			       putStrFlush "\t\t\t ---------------> Kontakt został usunięty!\n" >> pressEnter
+
+-- **** DODAWANIE GRUPY ****
+
+newGroup = do book <- getBook
+	      group <- promptLine "Podaj nazwę grupy"
+	      saveNewBook $ addGroup book group 
+
+-- **** WYPISYWANIE ISTNIEJĄCYCH GRUP****
+
+printAllGroups = do book <- getBook
+		    showItems "Istniejące grupy" $ getGList book 
+		    pressEnter 
+
+-- **** DODAWANIE / USUWANIE KNTAKTÓW Z GRUP****
+
+addPerToGr matchingGuysBook= do persona <- whoFromResultsToEdit matchingGuysBook	
+				group <- promptLine "Do jakiej grupy dodać kontakt"
+				book <- getBook
+				saveNewBook $ addPersonToGroup book persona group 
+				pressEnter
 
 
-	       
---pomocnicza funkcja, zwraca osobe z listy ktora zostala wypisana jako ponumerowana
-getPerson book num = (getList book) !! (num -1 )
---pomocnicza funkcja, zwraca tylko liste osob z Phonebook 
-getList (Phonebook pList gList) = pList
+removePerFromGr matchingGuysBook = do persona <- whoFromResultsToEdit matchingGuysBook
+	   			      group <- promptLine "Z jakiej grupy usunąć"
+				      book <- getBook
+				      saveNewBook $ removePersonFromGroup book persona group 	
+				      pressEnter
+			
+
+-- **** EDYCJA GRUP ****
+
+removeGroup = do book <- getBook
+		 group <- promptLine "Podaj nazwę grupy do usunięcia"
+		 if group `elem` getGList book
+			then do saveNewBook $ deleteGroup book group 
+				putStrFlush "Grupa usunieta! \n" >>pressEnter
+			else putStrFlush "Taka grupa nie isnieje \n" >> pressEnter
 
 
-{-
-findAndReturnBook byWhat = do book <- getBook
-			      value <- promptLine "Podaj prefix"
-			      showBook "WYNIKI" (Phonebook (findPeopleBy byWhat value book) [])
-			      return (Phonebook (findPeopleBy byWhat value book) [])  --TODO: to poprawic
+--TODO: czemu te nie działają? i może warto zrobić "anuluj"
+groupChangeName = do book <- getBook
+		     groupToChange <- prompt' "Podaj nazwę istniejącej grupy do zmiany" (\g -> g `elem` getGList book) 
+		     newGroup <- prompt' "Podaj nową nazwę (inną niż istniejące)" (\g -> not (g `elem` getGList book))
+		     saveNewBook $ renameGroup book groupToChange newGroup
+		     pressEnter 
 
-findAndEdit = do  showAllOrFind <- prompt' "Wybierz: 1 - wyświetlenie wszytkich i wybór, 2 - wyszukanie kontaktu)"  (\c -> c `elem` [1,2])
-		  tempBook <- getPossibleDesidions showAllOrFind
-		  nr <- prompt' "Podaj numer kontaktu do edycji/usuniecia"  (\c -> c >= 1 && c <= length (getList tempBook))
-		  editOrDelete <- prompt' "Wybierz: 1 - edycja, 2 - usunięcie kontaktu)"  (\c -> c `elem` [1,2])						  			
-		  if editOrDelete == 1
-			then editContact (getPerson tempBook nr)
-			else deleteContact (getPerson tempBook nr)
-				where getPossibleDesidions  showOrFind 
-					| showOrFind == 1 =  printContactsFile >> getBook >>= return
-					| otherwise = return findMenuWithReturnBook 
-
-findMenuWithReturnBook = do showMenu "WYSZUKIWANIE KONTAKTÓW WEDŁUG:"
-			       [("Imienia",  findMenuWithReturnBook name), -- te funkcje beda musiały zapytac o imie badz wypisac liste gdy wciesniemy enter
-				("Nazwiska", findMenuWithReturnBook familyName),
-				("Firmy", findMenuWithReturnBook company),
-				("Nr telefonu", findMenuWithReturnBook telephone),
-    			 -- 	("Daty urodzin", Interface.findAndShow birthday), -- trzeba rozkminic jak to zrobic przy tych typach
-		     --         ("Grupy", Interface.findAndShow groups)],
-		 		("Adresu email", findMenuWithReturnBook mail)] >>= return
-			    
-
-
--}
+sumGroups =  do book <- getBook
+		group1 <- prompt' "Podaj nazwę istniejącej grupy do której ma zostać włączona inna" (\g -> g `elem` getGList book) 
+		group2 <- prompt' "Podaj nazwę drugiej istniejącej grupy do scalenia" (\g -> g `elem` getGList book)
+		saveNewBook $ mergeGroups book group1 group2
+		pressEnter 
 
 
 
-
-
-
-
+-- **** SPRAWDZANIE URODZIN ****
+whoseBirthday = do book <- getBook
+		   listP <- findBirthdayPeople book
+		   showBook "Dzisiaj urodzinki mają:" (Phonebook listP [])
+		   pressEnter
 
 
