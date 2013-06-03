@@ -6,6 +6,7 @@ import Phonebook
 import Terminal
 import Interface
 import Person
+import Date
 
  --TODO: 
  -- można (ale nie trzeba) zrobić jeszce jakieś eleganckie wyswietlenie całej książki, ale typu grupa1:\n \t kontakt1 \n kontakt2\n grupa2: \n \t kontakt3 \n kontakt4\n 
@@ -28,7 +29,7 @@ searchSubmenu nextFunction = showMenu "WYSZUKIWANIE KONTAKTÓW WEDŁUG:"
                 ("Firmy", Interface.find company nextFunction),
                 ("Nr telefonu", Interface.find telephone nextFunction),
  		("Adresu email", Interface.find mail nextFunction),
-     	     -- ("Daty urodzin", Interface.find birthday nextFunction), -- TODO: cos tu nie smiga z typami
+     	        ("Daty urodzin (d.m.rrrr)", Interface.find (printableDate.birthday) nextFunction),
 		("<- Powrót", main)] 
 
 
