@@ -18,6 +18,7 @@ import Terminal
 import Date
 import DataStorage
 import Data.Char
+import Data.Maybe
 dataFile = "contacts"
 
 -- **** FUNKCJE POMOCNICZE ****
@@ -40,18 +41,35 @@ getGList (Phonebook pList gList) = gList
 addContact :: IO ()
 addContact = do book <- getBook
 		personToAdd <- getPersonData 
-		saveNewBook $ addPerson book personToAdd 
+		if not (personToAdd `elem` (getPList book)) 
+		  then saveNewBook $ addPerson book personToAdd 
+		else putStrFlush "Taka osoba już jest w książce, kontakt nie został dodany"
 
 -- pobiera z konsoli dane o nowej osobie 
-getPersonData = do --TODO: zrobić kontrolę wprowadzanych słów, można się posłużuć funkcją prompt' np. prompt' "Adres email" (\ x -> ("@" `elem` x) && ("." `elem` x) && (isLetter (last x))
-		name <- promptLine "Imię" 
-	        familyName <- promptLine "Nazwisko"  
+getPersonData = do 
+		name <- promptString' "Imię" validName
+	        familyName <- promptString' "Nazwisko" validName
 		company  <- promptLine "Firma" 
-		telephone  <- promptLine "Nr telefonu"
-		mail  <- promptLine "Adres email" 
-		birthday  <- promptLine "Data urodzin(dd.mm.rrrr)" 
+		telephone  <- promptString' "Nr telefonu" validPhone
+		mail  <- promptString' "Adres email" validMail
+		birthday  <- promptString' "Data urodzin(dd.mm.rrrr)" validDate
 		return $ Person name familyName company telephone mail (stringToDate birthday) []
+		
+-- poprawne imiona i nazwiska mogą składać się z liter i spacjii, nie mogą być puste
+validName :: String -> Bool 
+validName x = (x /= "") && ( and $ map (\c -> isLetter c || c == ' ') x)
 
+-- numer telefonu może składac się tylko z cyfr
+validPhone :: String -> Bool 
+validPhone x = and $ map isDigit x
+
+--poprawny mail musi zawierać znaki '@' oraz '.' (-> nie może być pusty)
+validMail :: String -> Bool
+validMail x = '@' `elem` x && '.' `elem` x
+
+-- poprawna data może być pusta, jeśli jest niepusta - musi być parsowalna
+validDate :: String -> Bool 
+validDate x = x == "" || (isJust $ stringToDate x)
 
 -- **** WYPISYWANIE GRUPY KONTAKTÓW ****
 printGroup = do book <- getBook
