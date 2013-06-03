@@ -131,17 +131,17 @@ printAllGroups = do book <- getBook
 		    pressEnter 
 
 -- **** DODAWANIE / USUWANIE KNTAKTÓW Z GRUP****
-
+-- TODO: Przydałoby się wyświetlić dostępne grupy
 addPerToGr matchingGuysBook= do persona <- whoFromResultsToEdit matchingGuysBook	
-				group <- promptLine "Do jakiej grupy dodać kontakt"
 				book <- getBook
+				group <- promptString' "Do jakiej grupy dodać kontakt" (\x -> x `elem` (getGList book))
 				saveNewBook $ addPersonToGroup book persona group 
 				pressEnter
 
-
+-- TODO: Przydałoby się wyświetlić grupy do których należy, albo coś. Co z obsługą niepoprawnego wyboru? 
 removePerFromGr matchingGuysBook = do persona <- whoFromResultsToEdit matchingGuysBook
-	   			      group <- promptLine "Z jakiej grupy usunąć"
 				      book <- getBook
+	   			      group <- promptLine "Z jakiej grupy usunąć"
 				      saveNewBook $ removePersonFromGroup book persona group 	
 				      pressEnter
 			
