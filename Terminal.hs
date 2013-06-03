@@ -23,9 +23,15 @@ prompt' text f =    do  putStrFlush $ text ++ ": "
                             Left e  ->  invalid
                             Right v ->  if (f v) then return v
                                         else invalid
-                    where invalid = putStrFlush "Błąd, spróbuj jeszcze raz:" >> prompt' text f
-
-
+  where invalid = putStrFlush "Błąd, spróbuj jeszcze raz: " >> prompt' text f
+	
+	
+-- jak wyżej, ale operuje na strinach, nie wymaga określenia typu wartości zwracanej 
+promptString' :: [Char] -> ([Char] -> Bool) -> IO [Char]
+promptString' text f =    do  putStrFlush $ text ++ ": "
+                              x <- getLine
+                              if ( f x ) then return x
+					 else  putStrFlush "Błąd, spróbuj jeszcze raz: " >> promptString' text f
 -- formatowanie tutulu menu
 createLabel label size fill =   let fillsize = (size - (length label) - 2)
                                     halffillL = fillsize `div` 2

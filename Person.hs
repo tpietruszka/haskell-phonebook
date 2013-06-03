@@ -43,8 +43,11 @@ instance Eq Person where
     
 -- funkcja konwertujaca "Person" na czytelny napis
 printablePerson :: Person -> String
-printablePerson p = concat $ intersperse " " [name p, familyName p, company p, telephone p, mail p, printableDate (birthday p)]
+printablePerson p = concat $ intersperse " " [name p, familyName p, company p, telephone p, mail p, printableDate (birthday p), printableGroups p]
 
+-- wypisanie listy grup 
+printableGroups :: Person -> String
+printableGroups p = concat $ intersperse ", " (groups p)
 
 -- funkcja sprawdzajaca, czy dana osoba ma dzisiaj urodziny
 -- konwersja wszystkich Int na Integer, w aplikacji uzywamy wylacznie Integerow

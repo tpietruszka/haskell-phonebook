@@ -61,7 +61,7 @@ printGroup = do book <- getBook
 
 
 -- **** WYPISYWANIE KONTAKTU****
-printContactsFile = getBook >>= showBook "Wszytskie kontakty"  >> pressEnter 
+printContactsFile = getBook >>= showBook "Wszystkie kontakty"  >> pressEnter 
 
 -- **** WYSZYKIWANIE KONTAKTU****
 find byWhat functionAtEnd= do book <- getBook
@@ -138,16 +138,16 @@ removeGroup = do book <- getBook
 			else putStrFlush "Taka grupa nie isnieje \n" >> pressEnter
 
 
---TODO: czemu te nie działają? i może warto zrobić "anuluj"
+--TODO: może warto zrobić "anuluj"
 groupChangeName = do book <- getBook
-		     groupToChange <- prompt' "Podaj nazwę istniejącej grupy do zmiany" (\g -> g `elem` getGList book) 
-		     newGroup <- prompt' "Podaj nową nazwę (inną niż istniejące)" (\g -> not (g `elem` getGList book))
+		     groupToChange <- promptString' "Podaj nazwę istniejącej grupy do zmiany" (\g -> g `elem` getGList book) 
+		     newGroup <- promptString' "Podaj nową nazwę (inną niż istniejące)" (\g -> not (g `elem` getGList book))
 		     saveNewBook $ renameGroup book groupToChange newGroup
 		     pressEnter 
 
 sumGroups =  do book <- getBook
-		group1 <- prompt' "Podaj nazwę istniejącej grupy do której ma zostać włączona inna" (\g -> g `elem` getGList book) 
-		group2 <- prompt' "Podaj nazwę drugiej istniejącej grupy do scalenia" (\g -> g `elem` getGList book)
+		group1 <- promptString' "Podaj nazwę istniejącej grupy która ma zostać włączona do innej" (\g -> g `elem` getGList book) 
+		group2 <- promptString' "Podaj nazwę drugiej istniejącej grupy do scalenia" (\g -> g `elem` getGList book)
 		saveNewBook $ mergeGroups book group1 group2
 		pressEnter 
 
