@@ -8,9 +8,6 @@ import Interface
 import Person
 import Date
 
- --TODO: 
- -- można (ale nie trzeba) zrobić jeszce jakieś eleganckie wyswietlenie całej książki, ale typu grupa1:\n \t kontakt1 \n kontakt2\n grupa2: \n \t kontakt3 \n kontakt4\n 
- -- można byłoby pobierać przy wywoływaniu z terminala  parametr - nazwę pliku na którym ma się cała zabawa odbywać - teraz na szwtywno jest  nazwa "contacts" do której dobraniana jest końcówka .data oraz folder /data
 -- **********  main menu  ***********
 main =  forever $ showMenu "MENU GŁÓWNE" 
 	       [("Wyświetlenie wszystkich kontaków", Interface.printContactsFile),
@@ -32,7 +29,6 @@ searchSubmenu nextFunction = showMenu "WYSZUKIWANIE KONTAKTÓW WEDŁUG:"
      	        ("Daty urodzin (d.m.rrrr)", Interface.find (printableDate.birthday) nextFunction),
 		("<- Powrót", main)] 
 
-
 -- ********* groupsSubmenu **********
 groupsSubmenu= showMenu "EDYCJA GRUP" 
 	       [("Dodaj grupę", Interface.newGroup),
@@ -43,7 +39,3 @@ groupsSubmenu= showMenu "EDYCJA GRUP"
 		("Scal dwie grupy", Interface.sumGroups),
                 ("Usunięcie grupy", Interface.removeGroup),
                 ("<- Powrót", main)] 
-
-
-
-

@@ -2,12 +2,10 @@ module Phonebook where
 
 import Data.List
 import Data.Time 
+import Data.Maybe
 
 import Person
 import Date
-import Generic
-
-
 
 -- obiekt przechowujący informacje o osobach i grupach, w formie listy
 -- listy osób i grup są cały czas posortowane 
@@ -81,17 +79,22 @@ addPersonToGroup book@(Phonebook pList gList) p g = editPerson book p (joinGroup
 removePersonFromGroup :: Phonebook -> Person -> Group -> Phonebook
 removePersonFromGroup book@(Phonebook pList gList) p g = editPerson book p (leaveGroup g p) 
 
+ -- usuwa wszystkie elementy listy
+deleteAll :: (Eq a) => a -> [a] -> [a]
+deleteAll d list = [x | x <- list, x /= d]
 
-
-
-
-
-urodziny = stringToDate "16.05.2012"
-kowalski = Person "Jan" "Kowalski" "McDonalds" "+48654654" "asd@example.com" urodziny ["Rodzinne"]
-nowak  = Person "Karol" "Nowak" "Tesco" "12321232" "nowak@asd.pl" (stringToDate "11.02.1980") ["Rodzinne"]
-
-book0 = addPerson (addPerson (Phonebook [] ["Rodzinne"]) kowalski) nowak
-book2 = addGroup book0 "Osobiste"
-book3 = addPersonToGroup book2 kowalski "Osobiste"
+-- zamienia pierwsze wystąpienie obiektu danego jako "old" na obiekt "new" w danej liście
+-- jeśli zmiana mogła zakłócic sortowanie - sortuje listę
+replace :: (Eq a, Ord a) => [a] -> a -> a -> [a]
+replace list old new 
+  | old `elem` list  = if (compare old new) == EQ
+			  then result
+			  else sort result
+  | otherwise = error "Próba wymiany nieistniejącego elementu listy"
+  where
+    result = beginning ++ new : ending
+    beginning = take position list
+    ending = drop (position + 1) list
+    position = fromJust $ elemIndex old list 
 
 

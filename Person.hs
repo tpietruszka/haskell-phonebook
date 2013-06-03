@@ -3,7 +3,6 @@ module Person where
 import Data.List
 import Data.Time
 import Data.Maybe
-
 import Date
 
 type Name = String
@@ -40,7 +39,6 @@ instance Ord Person where
 instance Eq Person where
   (==) a b = mail a == mail b
     
-    
 -- funkcja konwertujaca "Person" na czytelny napis
 printablePerson :: Person -> String
 printablePerson p = concat $ intersperse " " [name p, familyName p, company p, telephone p, mail p, printableDate (birthday p), printableGroups p]
@@ -58,9 +56,6 @@ hasBirthday (Date date) person
   (_, m, d) = toGregorian date
   month = toInteger m
   day = toInteger d
-
-
-  
   
 -- dołącza osobę do grupy (nie zapisuje zmiany do Phonebook, należy wołać razem z editPerson).
 -- jeśli osoba już należy do tej grupy - nic się nie dzieje
@@ -70,7 +65,6 @@ joinGroup g p
   | otherwise = p 
   where
    newGroupList = insert g (groups p)
-
       
 -- usuwa osobę z grupy, nie zapisuje zmian do Phonebook
 -- jeśli osoba nie należy do grupy - nic się nie dzieje
@@ -94,13 +88,3 @@ changeGroup old new person
       oldDeleted = delete old gp
       gp = groups person
       
-	
-	
-	
--- hasBirthday :: Person -> IO Bool 
--- hasBirthday person = do
---   c <- getCurrentTime
---   let (_, m, d) = toGregorian $ utctDay c
---       month = toInteger m
---       day = toInteger d
---   return (isAnniversary (fromJust $ birthday person) day month)

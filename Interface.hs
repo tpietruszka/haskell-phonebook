@@ -12,6 +12,8 @@ module Interface (addContact,
 		  sumGroups,
 		  removeGroup,
 		  whoseBirthday) where
+
+
 import Phonebook
 import Person
 import Terminal
@@ -19,6 +21,8 @@ import Date
 import DataStorage
 import Data.Char
 import Data.Maybe
+
+
 dataFile = "contacts"
 
 -- **** FUNKCJE POMOCNICZE ****
@@ -77,7 +81,6 @@ printGroup = do book <- getBook
 		showBook "Kontakty w tej grupie" $ (Phonebook (findPeopleInGroup book groupName) [])
 		pressEnter 
 
-
 -- **** WYPISYWANIE KONTAKTU****
 printContactsFile = getBook >>= showBook "Wszystkie kontakty"  >> pressEnter 
 
@@ -85,7 +88,7 @@ printContactsFile = getBook >>= showBook "Wszystkie kontakty"  >> pressEnter
 find byWhat functionAtEnd= do book <- getBook
 			      value <- promptLine "Podaj prefix"
 			      showBook "WYNIKI" (Phonebook (findPeopleBy byWhat value book) []) 
-			      functionAtEnd (Phonebook (findPeopleBy byWhat value book) []) --TODO: jak to poprawnie napisać
+			      functionAtEnd (Phonebook (findPeopleBy byWhat value book) []) 
 
 -- funkcja pomocnicza do mechaniznu wyszukanie+wyswietlenie+edycja - ta funkcja pozwala tylko na wyszukanie i wyswietlenie bo "gubi" nazwę funkcji do wyjonania póżniej
 pressEnter':: Phonebook -> IO ()
@@ -99,7 +102,7 @@ whoFromResultsToEdit matchingGuysBook = if (inputLength > 1)
 						else return $ getPerson matchingGuysBook 1
 							where inputLength = length (getPList matchingGuysBook)
 
-editOrRemoveP matchingGuysBook = do persona <- whoFromResultsToEdit matchingGuysBook --TODO: moze tutaj dodac opcje dodaj do grupy?
+editOrRemoveP matchingGuysBook = do persona <- whoFromResultsToEdit matchingGuysBook 
 				    editOrDelete <- prompt' "Dostępne operacje:\n 1) Edycja\n 2) Usunięcie kontaktu \n 3) Anuluj \n Twój wybór"  (\c -> c `elem` [1,2,3])
 				    resultAction editOrDelete persona
 					where resultAction x persona = case x of
@@ -131,14 +134,13 @@ printAllGroups = do book <- getBook
 		    pressEnter 
 
 -- **** DODAWANIE / USUWANIE KNTAKTÓW Z GRUP****
--- TODO: Przydałoby się wyświetlić dostępne grupy
+
 addPerToGr matchingGuysBook= do persona <- whoFromResultsToEdit matchingGuysBook	
 				book <- getBook
 				group <- promptString' "Do jakiej grupy dodać kontakt" (\x -> x `elem` (getGList book))
 				saveNewBook $ addPersonToGroup book persona group 
 				pressEnter
 
--- TODO: Przydałoby się wyświetlić grupy do których należy, albo coś. Co z obsługą niepoprawnego wyboru? 
 removePerFromGr matchingGuysBook = do persona <- whoFromResultsToEdit matchingGuysBook
 				      book <- getBook
 	   			      group <- promptLine "Z jakiej grupy usunąć"
@@ -155,8 +157,6 @@ removeGroup = do book <- getBook
 				putStrFlush "Grupa usunieta! \n" >>pressEnter
 			else putStrFlush "Taka grupa nie isnieje \n" >> pressEnter
 
-
---TODO: może warto zrobić "anuluj"
 groupChangeName = do book <- getBook
 		     groupToChange <- promptString' "Podaj nazwę istniejącej grupy do zmiany" (\g -> g `elem` getGList book) 
 		     newGroup <- promptString' "Podaj nową nazwę (inną niż istniejące)" (\g -> not (g `elem` getGList book))
@@ -169,9 +169,8 @@ sumGroups =  do book <- getBook
 		saveNewBook $ mergeGroups book group1 group2
 		pressEnter 
 
-
-
 -- **** SPRAWDZANIE URODZIN ****
+
 whoseBirthday = do book <- getBook
 		   listP <- findBirthdayPeople book
 		   showBook "Dzisiaj urodzinki mają:" (Phonebook listP [])
